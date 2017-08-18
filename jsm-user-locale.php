@@ -5,7 +5,7 @@
  * Domain Path: /languages
  * Plugin URI: https://surniaulula.com/extend/plugins/jsm-user-locale/
  * Assets URI: https://jsmoriss.github.io/jsm-user-locale/assets/
- * Author: JS Morisset
+ * Author: JS Morisset  modified JM
  * Author URI: https://surniaulula.com/
  * License: GPLv3
  * License URI: http://www.gnu.org/licenses/gpl.txt
@@ -260,6 +260,22 @@ if ( ! class_exists( 'JSM_User_Locale' ) ) {
 					return $user_locale;
 				}
 			}
+            //no user locale found so check cookie...
+            $cookie_name = 'pll_language';
+            if(isset($_COOKIE[$cookie_name])) {
+                $user_locale = $_COOKIE[$cookie_name];
+                if (sizeof($user_locale)<3){
+                    if ($user_locale=='en'){
+                        $user_locale = 'en_GB';
+                    } else {
+                        $user_locale = $user_locale . '_' . strtoupper($user_locale);
+                    }
+                }
+                if ( $user_id ){
+                    update_user_meta( $user_id, 'locale', $user_locale );
+                }
+                return $user_locale;
+            }
 			return $locale;
 		}
 
