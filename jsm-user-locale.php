@@ -255,11 +255,21 @@ if ( ! class_exists( 'JSM_User_Locale' ) ) {
 		}
 
 		public static function get_user_locale( $locale ) {
+            static $user_locale = '';
+            if ($user_locale!=''){      //only execute the logic once
+                return $user_locale;
+            }
+            
 			if ( $user_id = get_current_user_id() )	{
 				if ( $user_locale = get_user_meta( $user_id, 'locale', true ) ) {
 					return $user_locale;
 				}
 			}
+
+            if ( isset( $_GET['update-user-locale'] ) ) {
+                self::update_user_locale();  //if locale changed, will be redirected
+            }
+            
             //no user locale found so check cookie...
             $cookie_name = 'pll_language';
             if(isset($_COOKIE[$cookie_name])) {
@@ -292,7 +302,13 @@ if ( ! class_exists( 'JSM_User_Locale' ) ) {
 				if ( $user_locale === 'site-default' )
 					delete_user_meta( $user_id, 'locale' );
 				else update_user_meta( $user_id, 'locale', $user_locale );
-			}
+			} else {
+                //user not logged in, update pll cookie
+                if ( ! headers_sent() ) {
+                    $expire = time() + (60*60*24*30);
+                    setcookie( 'pll_language', substr($user_locale, 0, 2), $expire, COOKIEPATH ? COOKIEPATH : '/', COOKIE_DOMAIN, false );
+                }                
+            }
 
 			if ( $user_locale === 'site-default' )
 				$user_locale = self::get_default_locale();
@@ -318,9 +334,11 @@ if ( ! class_exists( 'JSM_User_Locale' ) ) {
 					$url = $pll_urls[$pll_def_locale];
 			}
 
-			wp_redirect( apply_filters( 'jsm_user_locale_redirect_url', $url, $user_locale ) );
-
-			exit;
+            //wp-spamshield if active does an early locale call before wp functions are ready
+            if (function_exists('wp_safe_redirect')){
+                wp_safe_redirect( apply_filters( 'jsm_user_locale_redirect_url', $url, $user_locale ) );
+                exit;
+            }
 		}
 
 		public static function add_locale_toolbar() {
