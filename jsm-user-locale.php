@@ -12,8 +12,9 @@
  * License URI: http://www.gnu.org/licenses/gpl.txt
  * Description: Add a quick and easy user locale / language selector in the WordPress admin back-end and front-end toolbar menus.
  * Requires At Least: 4.7
- * Tested Up To: 4.8.1
- * Version: 1.2.2
+ * Tested Up To: 5.0.2
+ * Requires PHP: 7.0
+ * Version: 1.2.3
  *
  * Version Numbering: {major}.{minor}.{bugfix}[-{stage}.{level}]
  *
@@ -206,6 +207,11 @@ if ( ! class_exists( 'JSM_User_Locale' ) ) {
 
 		public function __construct() {
 			$is_admin	 = is_admin();
+			$is_feed	 = stripos( $_SERVER[ 'REQUEST_URI' ], '/feed' );
+			$is_ajax	 = function_exists( 'wp_doing_ajax' ) ? wp_doing_ajax() : defined( 'DOING_AJAX' );
+			if ( $is_admin || $is_feed || $is_ajax ) {
+				return;
+			}
 			$on_front	 = apply_filters( 'jsm_user_locale_front_end', true );
 
 			if ( ! $is_admin && $on_front ) // apply user locale value to front-end
