@@ -319,8 +319,8 @@ if ( ! class_exists( 'JSM_User_Locale' ) ) {
 			} else {
 				$user_locale = self::get_default_locale();
 			}
-			//last attempt to have locale set so we don't have to do this again
-			$user_locale = self::set_user_locale( $user_locale );
+			//only reset locale when absolutely necessary, to avoid unnecessary redirects
+			$user_locale = self::set_user_locale( $user_locale, false );
 			return $user_locale;
 		}
 
@@ -334,7 +334,7 @@ if ( ! class_exists( 'JSM_User_Locale' ) ) {
 			}
 		}
 
-		public static function set_user_locale( $user_locale ) {
+		public static function set_user_locale( $user_locale, $redirect = true ) {
 			//only do this once
 			static $done = false;
 			if ( $done ) {
@@ -388,7 +388,7 @@ if ( ! class_exists( 'JSM_User_Locale' ) ) {
 
 			//some plugins such as wp-spamshield if active
 			//do an early locale call before wp functions are ready
-			if ( function_exists( 'wp_safe_redirect' ) && $switched ) {
+			if ( function_exists( 'wp_safe_redirect' ) && $switched && $redirect ) {
 				/* perhaps dont do this any more due to some browser caching issues
 				 * unless the cache control was successful?
 				 */
