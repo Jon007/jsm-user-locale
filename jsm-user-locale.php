@@ -12,9 +12,9 @@
  * License URI: http://www.gnu.org/licenses/gpl.txt
  * Description: Add a quick and easy user locale / language selector in the WordPress admin back-end and front-end toolbar menus.
  * Requires At Least: 4.7
- * Tested Up To: 5.0.2
+ * Tested Up To: 5.2.1
  * Requires PHP: 7.0
- * Version: 1.2.3
+ * Version: 1.2.4
  *
  * Version Numbering: {major}.{minor}.{bugfix}[-{stage}.{level}]
  *
@@ -212,7 +212,7 @@ if ( ! class_exists( 'JSM_User_Locale' ) ) {
 			if ( $is_admin || $is_feed || $is_ajax ) {
 				return;
 			}
-			$on_front	 = apply_filters( 'jsm_user_locale_front_end', true );
+			$on_front = apply_filters( 'jsm_user_locale_front_end', true );
 
 			if ( ! $is_admin && $on_front ) // apply user locale value to front-end
 				add_filter( 'locale', array( __CLASS__, 'get_user_locale' ) );
@@ -292,20 +292,22 @@ if ( ! class_exists( 'JSM_User_Locale' ) ) {
 			//if we come from a polylang site then keep the existing language
 			if ( isset( $_COOKIE[ $cookie_name ] ) ) {
 				$user_locale = $_COOKIE[ $cookie_name ];
-				if ( sizeof( $user_locale ) < 3 ) {
-					if ( $user_locale == 'en' ) {
-						$user_locale = 'en_GB';
-					} else {
-						$user_locale = $user_locale . '_' . strtoupper( $user_locale );
-					}
+				if ($user_locale){
+    				if ( strlen( $user_locale ) < 3 ) {
+    					if ( $user_locale == 'en' ) {
+    						$user_locale = 'en_GB';
+    					} else {
+    						$user_locale = $user_locale . '_' . strtoupper( $user_locale );
+    					}
+    				}
+    				//cookie language could be different from previous profile language
+    				if ( $user_id ) {
+    					update_user_meta( $user_id, 'locale', $user_locale );
+    				}
+    				return $user_locale;
 				}
-				//cooke language could be different from previous profile language
-				if ( $user_id ) {
-					update_user_meta( $user_id, 'locale', $user_locale );
-				}
-				return $user_locale;
 			}
-
+			
 			//otherwise if user is logged on, use locale language
 			if ( $user_id ) {
 				if ( $user_locale = get_user_meta( $user_id, 'locale', true ) ) {
